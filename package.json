@@ -1,0 +1,13 @@
+{
+  "name": "correo-api",
+  "version": "1.0.0",
+  "description": "API para leer correos por IMAP",
+  "main": "apiCorreo.js",
+  "scripts": {
+    "start": "node apiCorreo.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "imap": "^0.8.19"
+  }
+}
