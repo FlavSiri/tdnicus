@@ -33,28 +33,39 @@ app.post('/leer', (req, res) => {
           return res.json({ mensajes: [] });
         }
 
-        const fetch = imap.fetch(results.slice(-5), {
-          bodies: 'HEADER.FIELDS (FROM SUBJECT DATE)',
-          struct: true
-        });
+const fetch = imap.fetch(results.slice(-5), {
+  bodies: ['HEADER.FIELDS (FROM SUBJECT DATE)', 'TEXT'],
+  struct: true
+});
+
 
         const mensajes = [];
 
-        fetch.on('message', (msg) => {
-          msg.on('body', (stream) => {
-            let buffer = '';
-            stream.on('data', (chunk) => buffer += chunk.toString('utf8'));
-            stream.on('end', () => {
-              const parsed = Imap.parseHeader(buffer);
-              mensajes.push({
-                asunto: parsed.subject?.[0] || '',
-                de: parsed.from?.[0] || '',
-                fecha: parsed.date?.[0] || ''
-              });
-            });
-          });
-        });
+fetch.on('message', (msg) => {
+  let headers = {};
+  let html = '';
 
+  msg.on('body', (stream, info) => {
+    let buffer = '';
+    stream.on('data', chunk => buffer += chunk.toString('utf8'));
+    stream.on('end', () => {
+      if (info.which === 'BODY[]') {
+        html = buffer;
+      } else {
+        headers = Imap.parseHeader(buffer);
+      }
+    });
+  });
+
+  msg.once('end', () => {
+    mensajes.push({
+      asunto: headers.subject?.[0] || '',
+      de: headers.from?.[0] || '',
+      fecha: headers.date?.[0] || '',
+      html: html
+    });
+  });
+});
         fetch.once('end', () => {
           imap.end();
           res.json({ mensajes });
