@@ -34,7 +34,7 @@ app.post('/leer', (req, res) => {
         }
 
 const fetch = imap.fetch(results.slice(-5), {
-  bodies: ['HEADER.FIELDS (FROM SUBJECT DATE)', 'TEXT'],
+  bodies: ['HEADER.FIELDS (FROM SUBJECT DATE)', 'BODY[]'],
   struct: true
 });
 
